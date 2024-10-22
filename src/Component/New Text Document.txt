@@ -1,0 +1,296 @@
+import React, {useState, useEffect} from 'react';
+import ScreenHeader from '../Component/screenHeader';
+import {
+  responsiveHeight,
+  responsiveWidth,
+  responsiveFontSize,
+  responsiveScreenHeight,
+  responsiveScreenWidth,
+} from 'react-native-responsive-dimensions';
+import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
+import Loader from '../Component/loader';
+import {FlatList} from 'react-native-gesture-handler';
+import {moderartescale, scale, verticalscale} from '../Constants/PixelRatio';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import {FONTS} from '../Constants/Fonts';
+import {useRoute} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
+import {showToastMsg, getData, setData} from '../Service/localStorage';
+import {postWithToken, postWithOutToken} from '../Service/service';
+import {useFocusEffect} from '@react-navigation/native';
+import CategoryItemsTab from '../Component/businessDetails/categoryItemsListTab';
+
+function CategoryBusiness() {
+  const navigation = useNavigation();
+
+  const dispatch = useDispatch();
+  const route = useRoute();
+  const {
+    baseUrl,
+    siteUrl,
+    userToken,
+    userData,
+    selectedLang,
+    LangValue,
+    deviceToken,
+    orderType,
+    google_api_key,
+    google_auto_complete_country,
+  } = useSelector(state => state.common);
+  const [viewloader, setLoader] = useState(false);
+  const [language, setLanguage] = useState(null);
+  const [preorderDetails, setPreorderDetails] = useState({
+    preorder: false,
+    preorderDate: '',
+    preorderTime: '',
+    preorderMenu: 0,
+  });
+
+  const [categoryDetails, setCategoryDetails] = useState(null);
+  const [selected_category, setSelectedCategory] = useState(null);
+
+  const [category_menu, setCategoryMenu] = useState({
+    isLoading: true,
+    list: null,
+  });
+
+  const [index, setIndex] = useState(0);
+  const _data = [
+    {key: 'chicken', title: 'Chicken'},
+    {key: 'mutton', title: 'Mutton'},
+    {key: 'seafood', title: 'Sea Food'},
+    {key: 'chinese', title: 'Chinese'},
+    {key: 'eggroll', title: 'Egg Roll'},
+  ];
+  const [routes] = useState(_data);
+
+  const renderScene = SceneMap({
+    chicken: Chicken,
+    mutton: Chicken,
+    seafood: Chicken,
+    chinese: Chicken,
+    eggroll: Chicken,
+  });
+
+  const Chicken = () => <CategoryItemsTab />;
+
+  /*const [tab_routes, setScreenRoutes] = useState([
+    {key: 'cat_0', title: 'Snacks'},
+    {key: 'cat_1', title: 'Entree'},
+    {key: 'cat_2', title: 'Chicken'},
+    {key: 'cat_3', title: 'Meat & Chicken'},
+    {key: 'cat_4', title: 'Soup & Salad'},
+    {key: 'cat_5', title: 'Vegetables'},
+    {key: 'cat_6', title: 'Fish Menu'},
+    {key: 'cat_7', title: 'Mutton'},
+    {key: 'cat_8', title: 'Lamb'},
+    {key: 'cat_9', title: 'Soft Drinks'},
+  ]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setLanguage(LangValue);
+    }, [selectedLang]),
+  );
+
+  const renderScene = SceneMap({
+    cat_0: FetchDish,
+    cat_1: FetchDish,
+    cat_3: FetchDish,
+    cat_4: FetchDish,
+    cat_5: FetchDish,
+    cat_6: FetchDish,
+    cat_7: FetchDish,
+    cat_8: FetchDish,
+    cat_9: FetchDish,
+  });
+
+  /* const [renderScene, setRenderScene] = useState(
+    SceneMap({
+      cat_0: FetchDish,
+      cat_1: FetchDish,
+      cat_3: FetchDish,
+      cat_4: FetchDish,
+      cat_5: FetchDish,
+      cat_6: FetchDish,
+      cat_7: FetchDish,
+      cat_8: FetchDish,
+      cat_9: FetchDish,
+    }),
+  );*/
+
+  /*useFocusEffect(
+    React.useCallback(() => {
+      if (route.params != undefined) {
+        if (route.params.cat_id != undefined) {
+          setSelectedCategory(route.params.cat_id);
+        }
+        if (route.params.cat != undefined) {
+          setCategoryDetails(route.params.cat);
+
+          const _data = [];
+
+          route.params.cat.map((item, index) => {
+            _data.push({key: index, title: item.name});
+          });
+
+          console.log(_data);
+
+          setRoutes(_data);
+          setRenderScene({
+            0: FetchDish,
+            1: FetchDish,
+            3: FetchDish,
+            4: FetchDish,
+            5: FetchDish,
+            6: FetchDish,
+            7: FetchDish,
+            8: FetchDish,
+            9: FetchDish,
+          });
+        }
+
+        if (route.params.cat_index != undefined) {
+          setIndex(route.params.cat_index);
+        }
+      }
+    }, [route.params]),
+  );*/
+
+  /*const renderScene = SceneMap({
+    chicken: Chicken,
+    mutton: Chicken,
+    seafood: Chicken,
+    chinese: Chicken,
+    eggroll: Chicken,
+  });*/
+
+  const renderTabBar = props => (
+    <TabBar
+      {...props}
+      scrollEnabled={true}
+      indicatorStyle={{backgroundColor: '#F00049'}}
+      style={{backgroundColor: '#FFFFFF'}}
+      activeColor="#F00049"
+      inactiveColor="#888888"
+      contentContainerStyle={
+        {
+          // padding:10
+        }
+      }
+      tabStyle={{
+        width: 90,
+        height: 40,
+        padding: 10,
+      }}
+    />
+  );
+
+  return (
+    <View style={styles.main_conainer}>
+      <ScreenHeader title="Checken" back_display={true}/>
+      <View
+        style={{
+          flex: 1,
+          height: responsiveHeight(100),
+          padding: scale(5),
+          width: responsiveWidth(100),
+        }}>
+        <TabView
+          navigationState={{index, routes}}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{width: responsiveWidth(100)}}
+          lazy={true}
+          renderLazyPlaceholder={() => {
+            return <Loader />;
+          }}
+          sceneContainerStyle={{
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          renderTabBar={renderTabBar}
+        />
+      </View>
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  main_conainer: {
+    height: responsiveHeight(100),
+    width: responsiveWidth(100),
+    // width:Dimensions.get('screen').width,
+    // padding: 10,
+    backgroundColor: '#FFFFFF',
+    flex: 1,
+  },
+  container: {
+    width: moderartescale(346),
+    height: verticalscale(70),
+    borderRadius: moderartescale(10),
+    borderWidth: moderartescale(2),
+    borderColor: '#CCCCCC',
+    marginTop: verticalscale(10),
+    padding: moderartescale(10),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // flex:1
+  },
+  image: {
+    width: moderartescale(52),
+    height: verticalscale(53),
+    borderRadius: moderartescale(15),
+  },
+  content: {
+    marginLeft: moderartescale(15),
+    // width:scale(230),
+    // backgroundColor:'green'
+  },
+  name: {
+    color: '#000000',
+    fontSize: moderartescale(14),
+    fontWeight: '500',
+    // backgroundColor:'red',
+    // width: scale(60),
+    flexShrink: 1, // allows the text to wrap and avoid overflow
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    marginTop: verticalscale(5),
+  },
+  discountedPrice: {
+    color: '#F10E0E',
+    fontSize: moderartescale(13),
+    textDecorationLine: 'line-through',
+    marginRight: moderartescale(10),
+    fontFamily: FONTS.Inter.regular,
+  },
+  price: {
+    color: '#000000',
+    fontSize: moderartescale(13),
+    fontFamily: FONTS.Inter.semibold,
+  },
+  button: {
+    width: moderartescale(40),
+    height: verticalscale(23),
+    borderRadius: moderartescale(8),
+    backgroundColor: '#42E309',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: moderartescale(13),
+    fontFamily: FONTS.Inter.semibold,
+  },
+});
+export default CategoryBusiness;
